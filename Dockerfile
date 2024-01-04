@@ -1,6 +1,6 @@
 FROM ubuntu:20.04
 
-RUN apt-get update && apt-get install -y
+RUN apt-get update && apt-get install -y systemd
 
 RUN apt-get install -y wget && \
     wget -qO- https://github.com/yudai/gotty/releases/download/v2.0.0/gotty_linux_amd64.tar.gz | tar xvz && \
