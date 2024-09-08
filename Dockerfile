@@ -1,14 +1,24 @@
+# Базовый образ Ubuntu 20.04
 FROM ubuntu:20.04
 
-RUN apt-get update && apt-get install -y systemd
+# Обновление системы и установка необходимых инструментов
+RUN apt-get update && \
+    apt-get install -y qemu qemu-kvm libvirt-clients libvirt-daemon-system sudo python3 wget curl
 
-RUN apt-get install -y wget && \
-    wget -qO- https://github.com/yudai/gotty/releases/download/v2.0.0/gotty_linux_amd64.tar.gz | tar xvz && \
-    mv gotty /usr/local/bin/gotty && \
-    chmod +x /usr/local/bin/gotty
+# Создание пользователя
+RUN useradd -m -s /bin/bash daniel && \
+    echo 'daniel:17021983' | chpasswd && \
+    adduser daniel sudo
 
-RUN echo '[Unit]\nDescription=gotty\nAfter=network.target\n\n[Service]\nExecStart=/usr/local/bin/gotty -w bash\nRestart=on-failure\nUser=root\n\n[Install]\nWantedBy=multi-user.target' > /etc/systemd/system/gotty.service
+# Скачивание ISO-образа Ubuntu Server 20.04 LTS
+RUN mkdir -p /iso && \
+    wget -O /iso/ubuntu-20.04-server.iso https://releases.ubuntu.com/20.04/ubuntu-20.04-live-server-amd64.iso
 
-STOPSIGNAL SIGRTMIN+3
+# Открытие порта для SSH
+EXPOSE 22
 
-CMD ["/sbin/init"]
+# Добавление Python-скрипта в контейнер
+COPY create_vm.py /usr/local/bin/create_vm.py
+
+# Команда для запуска скрипта
+CMD ["python3", "/usr/local/bin/create_vm.py"]
